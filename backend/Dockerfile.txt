@@ -1,0 +1,20 @@
+# imagem base
+FROM node:18
+
+# diretório da app
+WORKDIR /app
+
+# copiar package
+COPY package*.json ./
+
+# instalar dependências
+RUN npm install
+
+# copiar código
+COPY . .
+
+# porta do app
+EXPOSE 3000
+
+# iniciar app
+CMD ["npm", "run", "dev"]

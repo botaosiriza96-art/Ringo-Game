@@ -1,0 +1,54 @@
+let users = {};
+
+function ensureUser(user) {
+  if (!users[user]) {
+    users[user] = { balance: 10000 }; // 100.00 MZN
+  }
+}
+
+// converter MZN → centavos
+function toCents(amount) {
+  return Math.round(Number(amount) * 100);
+}
+
+// converter centavos → MZN
+function fromCents(amount) {
+  return (amount / 100).toFixed(2);
+}
+
+function deductEntry(user, amountMZN) {
+  ensureUser(user);
+
+  const amount = toCents(amountMZN);
+
+  if (users[user].balance < amount) {
+    throw "Saldo insuficiente";
+  }
+
+  users[user].balance -= amount;
+}
+
+function handlePayment(user, amountMZN) {
+  ensureUser(user);
+
+  const amount = toCents(amountMZN);
+
+  users[user].balance += amount;
+
+  console.log(
+    `Pagamento: ${user} recebeu ${fromCents(amount)} MZN`
+  );
+}
+
+function getBalance(user) {
+  ensureUser(user);
+  return fromCents(users[user].balance);
+}
+
+module.exports = {
+  deductEntry,
+  handlePayment,
+  getBalance,
+  toCents,
+  fromCents
+};

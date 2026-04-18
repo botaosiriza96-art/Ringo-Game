@@ -1,0 +1,6 @@
+const { getBalance } = require("./payment");
+
+app.get("/balance/:user", (req, res) => {
+  const balance = getBalance(req.params.user);
+  res.json({ balance: balance + " MZN" });
+});
