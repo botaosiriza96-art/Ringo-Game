@@ -2,59 +2,154 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
+    <title>Jogo de Competição</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minha Página</title>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: Arial;
+            background: #e3f2fd;
             margin: 0;
             padding: 0;
-            background-color: #f2f2f2;
         }
 
         header {
-            background-color: #2e7d32;
+            background: #1565c0;
             color: white;
             padding: 15px;
             text-align: center;
         }
 
-        main {
+        .container {
             padding: 20px;
+            max-width: 500px;
+            margin: auto;
         }
 
-        .btn {
-            background-color: #1976d2;
-            color: white;
-            padding: 10px 15px;
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
             border: none;
             cursor: pointer;
-            border-radius: 5px;
+            color: white;
+            background: #2e7d32;
+            font-size: 16px;
         }
 
-        .btn:hover {
-            background-color: #0d47a1;
+        button:hover {
+            background: #1b5e20;
+        }
+
+        .card {
+            background: white;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 10px;
+        }
+
+        #players {
+            font-weight: bold;
+        }
+
+        #result {
+            color: #d32f2f;
+            font-size: 18px;
         }
     </style>
 </head>
+
 <body>
 
 <header>
-    <h1>Bem-vindo ao meu site</h1>
+    <h2>🔥 Jogo de Competição (70% Winner)</h2>
 </header>
 
-<main>
-    <h2>Página inicial</h2>
-    <p>Este é um exemplo básico de HTML.</p>
+<div class="container">
 
-    <button class="btn" onclick="mostrarMensagem()">Clique aqui</button>
+    <div class="card">
+        <h3>Entrar no jogo</h3>
 
-    <p id="mensagem"></p>
-</main>
+        <input id="name" placeholder="Nome completo (obrigatório)">
+        <input id="phone" placeholder="Número de telemóvel (obrigatório)">
+        <input id="age" type="number" placeholder="Idade (mínimo 18)">
+        <input id="balance" type="number" placeholder="Saldo inicial (MT)">
+
+        <button onclick="joinGame()">Entrar no Jogo (50MT)</button>
+    </div>
+
+    <div class="card">
+        <h3>Jogadores</h3>
+        <p id="players">Nenhum jogador ainda</p>
+    </div>
+
+    <div class="card">
+        <button onclick="startGame()">INICIAR JOGO 🎮</button>
+    </div>
+
+    <div class="card">
+        <h3>Resultado</h3>
+        <p id="result"></p>
+    </div>
+
+</div>
 
 <script>
-    function mostrarMensagem() {
-        document.getElementById("mensagem").innerText = "Olá! Funcionou corretamente 🚀";
+    const socket = io("http://localhost:3000");
+
+    let playerData = null;
+
+    function joinGame() {
+        const name = document.getElementById("name").value;
+        const phone = document.getElementById("phone").value;
+        const age = parseInt(document.getElementById("age").value);
+        let balance = parseInt(document.getElementById("balance").value);
+
+        if (!name || !phone || !age || age < 18) {
+            alert("Nome, telefone e idade (18+) são obrigatórios");
+            return;
+        }
+
+        if (!balance) balance = 0;
+
+        playerData = {
+            name,
+            phone,
+            age,
+            balance
+        };
+
+        socket.emit("join_game", playerData);
+    }
+
+    socket.on("join_result", (data) => {
+        alert(JSON.stringify(data));
+    });
+
+    socket.on("update_players", (players) => {
+        document.getElementById("players").innerText =
+            players.length ? players.join(", ") : "Nenhum jogador";
+    });
+
+    socket.on("game_result", (result) => {
+        if (result.error) {
+            document.getElementById("result").innerText = result.error;
+        } else {
+            document.getElementById("result").innerHTML =
+                `🏆 Vencedor: <b>${result.winner}</b><br>💰 Prémio: ${result.prize} MT`;
+        }
+    });
+
+    function startGame() {
+        socket.emit("start_game");
     }
 </script>
 
